@@ -6,6 +6,7 @@ function Item() {
 	this.url = "";
 	this.publicTime = {};
 	this.isComplete = false;
+	this.generalRanking = 3;
 	// if not complete, the number of chapters
 	this.magnetLink = "";
 }

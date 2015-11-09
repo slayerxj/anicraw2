@@ -9,7 +9,10 @@ var stars = [
 
 var assembleString = function (items) {
     return items.reduce(function (pre, cur) {
-        return pre + "<tr><td><a href='" + domain + cur.url + "'>" + cur.name + "</a></td><td>" + stars[cur.generalRanking] + "</td><td>C</td></tr>";
+        return pre + "<tr><td><a href='" + domain + cur.url + "'>" + cur.name +
+            "</a></td><td>" + stars[cur.generalRanking] +
+            "</td><td><a href='" + cur.magnetLink + "'>" + "link" +
+            "</a></td></tr>";
     }, "");
 };
 

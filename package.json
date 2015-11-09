@@ -15,5 +15,9 @@
     "crawler"
   ],
   "author": "Xiong Jie",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "superagent": "^1.4.0"
+  }
 }

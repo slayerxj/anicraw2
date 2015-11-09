@@ -1,9 +1,7 @@
 var library = require("./library.js");
 
 var tier3String = library.getFormatAliases();
-console.log(tier3String);
 var tier2String = library.getWorkNames();
-console.log(tier2String);
 var tier1String = library.getSubtitleProviders();
 var SpecialString = library.getCompleteAliases();
 

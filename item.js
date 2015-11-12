@@ -5,7 +5,7 @@ function Item() {
 	this.subtitleProvider = "";
 	this.url = "";
 	this.isNew = false;
-	this.publicTime = {};
+	this.publishTime = {};
 	this.isComplete = false;
 	this.generalRanking = 4; // represent unranked
 	// if not complete, the number of chapters
@@ -30,6 +30,15 @@ Item.prototype.isEqual = function(item) {
 	}
 	
 	return false;
+};
+
+Item.sort = function(a,b) {
+	var rankDiff = (a.generalRanking - b.generalRanking);
+	if (rankDiff === 0) {
+		return (b.publishTime.getTime() - a.publishTime.getTime());
+	} else {
+		return rankDiff;
+	}
 };
 
 module.exports = Item;

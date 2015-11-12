@@ -8,8 +8,8 @@ var createItemFromEntry = require("./entryParser.js");
 var domain = "http://share.popgo.org";
 var searchPagePostfix = "/search.php?title=&groups=&uploader=&sorts=&orderby=&page=";
 var fullUrl = domain + searchPagePostfix;
-var lastPageNumber = 100;
-var numberOfConcurrency = 12;
+var lastPageNumber = 3277;
+var numberOfConcurrency = 20;
 
 var failedUrl = [];
 
@@ -72,7 +72,7 @@ module.exports.getOneByOne = function (database, whenFinish) {
 
 module.exports.getAll = function (database, whenFinish) {
     var urlNumbers = [];
-    for (var i = 10; i < lastPageNumber + 1; i++) {
+    for (var i = 1; i < lastPageNumber + 1; i++) {
         urlNumbers.push(i);
     }
 

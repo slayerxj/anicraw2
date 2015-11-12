@@ -1,9 +1,9 @@
 var library = require("./library.js");
 
-var tier3String = library.getFormatAliases();
-var tier2String = library.getWorkNames();
-var tier1String = library.getSubtitleProviders();
-var SpecialString = library.getCompleteAliases();
+var formatAliases = library.getFormatAliases();
+var workNames = library.getWorkNames();
+var subtitleProviders = library.getSubtitleProviders();
+var completeAliases = library.getCompleteAliases();
 
 var stringFilter = function (items, words) {
     var validItems = [];
@@ -30,22 +30,32 @@ var stringFilter = function (items, words) {
 
 var rank = function (item, lines) {
     item.generalRanking = 3;
-    lines.forEach(function (words, index) {
-        for (var j = 0; j < words.length; j++) {
-            if (item.name.toUpperCase().indexOf(words[j].toUpperCase()) !== -1) {
-                item.generalRanking--;
-                break;
-            }
+    for (var i = 0; i < workNames.length; i++) {
+        if (item.name.toUpperCase().indexOf(workNames[i].toUpperCase()) !== -1) {
+            item.generalRanking--;
+            break;
         }
-    });
+    }
+
+    for (var i = 0; i < subtitleProviders.length; i++) {
+        if (item.name.toUpperCase().indexOf(subtitleProviders[i].toUpperCase()) !== -1) {
+            item.generalRanking--;
+            break;
+        }
+    }
+
+    for (var i = 0; i < completeAliases.length; i++) {
+        if (item.name.toUpperCase().indexOf(completeAliases[i].toUpperCase()) !== -1) {
+            item.isComplete = true;
+            item.generalRanking--;
+            break;
+        }
+    }
 };
 
 module.exports = function (items) {
-    var lines = [];
-    lines.push(tier2String, tier1String, SpecialString);
-
-    var splitItems = stringFilter(items, tier3String);
+    var splitItems = stringFilter(items, formatAliases);
     splitItems.valid.forEach(function (item) {
-        rank(item, lines);
+        rank(item);
     });
 };

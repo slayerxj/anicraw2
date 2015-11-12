@@ -15,6 +15,7 @@ Database.prototype.initialize = function () {
 	var record = require("./result.js");
 	for (var index = 0; index < record.length; index++) {
 		var item = record[index];
+		item.publishTime = new Date(item.publishTime);
 		this.content.push(item);
 		this.contentValidation.push(true);
 		this.contentMap[item.url] = item;
@@ -45,9 +46,7 @@ Database.prototype.rank = function () {
 	});
 
 	rank(unrankedItems);
-	this.content.sort(function (a, b) {
-		return (a.generalRanking - b.generalRanking);
-	});
+	this.content.sort(Item.sort);
 
 	return this;
 };

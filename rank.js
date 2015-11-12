@@ -5,7 +5,7 @@ var tier2String = library.getWorkNames();
 var tier1String = library.getSubtitleProviders();
 var SpecialString = library.getCompleteAliases();
 
-var stringFilter = function(items, words) {
+var stringFilter = function (items, words) {
     var validItems = [];
     var leftItems = [];
 
@@ -28,20 +28,24 @@ var stringFilter = function(items, words) {
     };
 };
 
-module.exports = function(items) {
+var rank = function (item, lines) {
+    item.generalRanking = 3;
+    lines.forEach(function (words, index) {
+        for (var j = 0; j < words.length; j++) {
+            if (item.name.toUpperCase().indexOf(words[j].toUpperCase()) !== -1) {
+                item.generalRanking--;
+                break;
+            }
+        }
+    });
+};
+
+module.exports = function (items) {
     var lines = [];
     lines.push(tier2String, tier1String, SpecialString);
 
     var splitItems = stringFilter(items, tier3String);
-    splitItems.valid.forEach(function(item) {
-        item.generalRanking = 3;
-        lines.forEach(function(words, index) {
-            for (var j = 0; j < words.length; j++) {
-                if (item.name.toUpperCase().indexOf(words[j].toUpperCase()) !== -1) {
-                    item.generalRanking--;
-                    break;
-                }
-            }
-        });
+    splitItems.valid.forEach(function (item) {
+        rank(item, lines);
     });
 };

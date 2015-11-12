@@ -4,12 +4,17 @@ function Item() {
 	this.resolution = "1080p";
 	this.subtitleProvider = "";
 	this.url = "";
+	this.isNew = false;
 	this.publicTime = {};
 	this.isComplete = false;
-	this.generalRanking = 3;
+	this.generalRanking = 4; // represent unranked
 	// if not complete, the number of chapters
 	this.magnetLink = "";
 }
+
+Item.prototype.isUnranked = function() {
+	return (this.generalRanking === 4);
+};
 
 Item.prototype.isEqual = function(item) {
 	if (this.url === item.url) {

@@ -13,7 +13,7 @@ var numberOfConcurrency = 20;
 
 var failedUrl = [];
 
-var fetchUrl = function (urlNumber, database, callback, autoNext) {
+var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
     console.log("Start to load page", urlNumber);
     var url = fullUrl + urlNumber.toString();
     var allPageInsertFail = true;
@@ -58,16 +58,18 @@ var fetchUrl = function (urlNumber, database, callback, autoNext) {
             callback();
             if (autoNext) {
                 if (allPageInsertFail) {
+                    console.log(whenFinish.toString());
+                    whenFinish();
                     return;
                 } else {
-                    fetchUrl(urlNumber + 1, database, callback, autoNext);
+                    fetchUrl(urlNumber + 1, database, callback, autoNext, whenFinish);
                 }
             }
         });
 };
 
 module.exports.getOneByOne = function (database, whenFinish) {
-    fetchUrl(1, database, function () { }, true);
+    fetchUrl(1, database, function () { }, true, whenFinish);
 }
 
 module.exports.getAll = function (database, whenFinish) {

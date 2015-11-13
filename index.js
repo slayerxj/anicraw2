@@ -8,6 +8,7 @@ var generatePage = require("./pageGenerater.js");
 
 var ifRegen = (process.argv[2] === "r");
 var database = new Database();
+database.initialize().rank();
 
 // if (ifRegen) {
 //     database
@@ -47,10 +48,16 @@ app.get('/', function (req, res) {
 io.on('connection', function (socket) {
 	socket.on('page load', function () {
 		console.log("receive page load");
-		database.initialize().rank();
+
 		var insertString = generatePage(database);
 		console.log("emit update message");
 		io.emit('update message', insertString);
+		database.update(function () {
+			database.rank();
+			insertString = generatePage(database);
+			console.log("emit update message again");
+			io.emit('update message', insertString);
+		});
 	});
 });
 

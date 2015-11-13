@@ -14,7 +14,10 @@ function Database() {
 Database.prototype.initialize = function () {
 	var record = require("./result.js");
 	for (var index = 0; index < record.length; index++) {
-		var item = record[index];
+		var item = new Item();
+		Object.keys(record[index]).forEach(function (attribute) {
+			item[attribute] = record[index][attribute];
+		});
 		item.publishTime = new Date(item.publishTime);
 		this.content.push(item);
 		this.contentValidation.push(true);

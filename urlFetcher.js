@@ -17,6 +17,7 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
     console.log("Start to load page", urlNumber);
     var url = fullUrl + urlNumber.toString();
     var allPageInsertFail = true;
+    var hasItemGen = false;
 
     request
         .get(url)
@@ -44,6 +45,7 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
                 // var isForceTop = (entry.text().indexOf("置顶") !== -1);
 
                 if (item) {
+                    hasItemGen = true;
                     insertSuccess = database.insert(item);
                     if (insertSuccess) {
                         allPageInsertFail = false;
@@ -57,9 +59,8 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
             }
             callback();
             if (autoNext) {
-                if (allPageInsertFail) {
-                    console.log(whenFinish.toString());
-                    whenFinish();
+                whenFinish();
+                if (allPageInsertFail && hasItemGen) {
                     return;
                 } else {
                     fetchUrl(urlNumber + 1, database, callback, autoNext, whenFinish);

@@ -12,27 +12,41 @@ function Item() {
 	this.magnetLink = "";
 }
 
-Item.prototype.isUnranked = function() {
+Item.prototype.isUnranked = function () {
 	return (this.generalRanking === 4);
 };
 
-Item.prototype.isEqual = function(item) {
+Item.prototype.getKey = function () {
+	// Should transfer to magnetLink in the future
+	return this.url;
+};
+
+Item.prototype.isEqual = function (item) {
 	if (this.url === item.url) {
 		return true;
 	} else {
 		if ((this.name === item.name) &&
-		(this.source === item.source) &&
-		(this.resolution === item.resolution) &&
-		(this.subtitleProvider === item.subtitleProvider) &&
-		(this.isComplete === item.isComplete)) {
+			(this.source === item.source) &&
+			(this.resolution === item.resolution) &&
+			(this.subtitleProvider === item.subtitleProvider) &&
+			(this.isComplete === item.isComplete)) {
 			return true;
 		}
 	}
-	
+
 	return false;
 };
 
-Item.sort = function(a,b) {
+Item.initialize = function (record) {
+	var item = new Item();
+	Object.keys(record).forEach(function (attribute) {
+		item[attribute] = record[attribute];
+	});
+	item.publishTime = new Date(item.publishTime);
+	return item;
+};
+
+Item.sort = function (a, b) {
 	var rankDiff = (a.generalRanking - b.generalRanking);
 	if (rankDiff === 0) {
 		return (b.publishTime.getTime() - a.publishTime.getTime());

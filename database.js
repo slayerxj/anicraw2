@@ -13,15 +13,12 @@ function Database() {
 
 Database.prototype.initialize = function () {
 	var record = require("./result.js");
+
 	for (var index = 0; index < record.length; index++) {
-		var item = new Item();
-		Object.keys(record[index]).forEach(function (attribute) {
-			item[attribute] = record[index][attribute];
-		});
-		item.publishTime = new Date(item.publishTime);
+		var item = Item.initialize(record[index]);
 		this.content.push(item);
 		this.contentValidation.push(true);
-		this.contentMap[item.url] = item;
+		this.contentMap[item.getKey()] = item;
 	}
 
 	return this;
@@ -32,18 +29,17 @@ Database.prototype.insert = function (item) {
 		return false;
 	}
 
-	if (this.contentMap[item.url]) {
+	if (this.contentMap[item.getKey()]) {
 		return false;
 	} else {
 		this.content.push(item);
 		this.contentValidation.push(true);
-		this.contentMap[item.url] = item;
+		this.contentMap[item.getKey()] = item;
 		return true;
 	}
 };
 
 Database.prototype.rank = function () {
-	console.log("Database.prototype.rank");
 	var unrankedItems = this.content.filter(function (item) {
 		return item.isUnranked();
 	});
@@ -63,12 +59,11 @@ Database.prototype.regenerate = function (whenFinish) {
 };
 
 Database.prototype.needUpdateRecord = function () {
-	console.log("Database.prototype.needUpdateRecord");
 	return true;
 };
 
 Database.prototype.updateRecord = function () {
-	console.log("Database.prototype.updateRecord");
+	// Record is maintained in Database Class, should split out
 	if (this.needUpdateRecord()) {
 		fs.writeFile("result.js", "module.exports = " + JSON.stringify(this.content), function (err) {
 			if (err) {

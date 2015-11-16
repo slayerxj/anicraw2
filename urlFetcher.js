@@ -3,7 +3,7 @@ var request = require("superagent");
 var cheerio = require("cheerio");
 var async = require("async");
 
-var createItemFromEntry = require("./entryParser.js");
+var entryParser = require("./entryParser.js");
 
 var domain = "http://share.popgo.org";
 var searchPagePostfix = "/search.php?title=&groups=&uploader=&sorts=&orderby=&page=";
@@ -41,7 +41,7 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
             var item, insertSuccess;
 
             while (entry.text()) {
-                item = createItemFromEntry(entry);
+                item = entryParser[domain](entry);
                 // var isForceTop = (entry.text().indexOf("置顶") !== -1);
 
                 if (item) {
@@ -71,7 +71,7 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
 
 module.exports.getOneByOne = function (database, whenFinish) {
     fetchUrl(1, database, function () { }, true, whenFinish);
-}
+};
 
 module.exports.getAll = function (database, whenFinish) {
     var urlNumbers = [];

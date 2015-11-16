@@ -12,7 +12,8 @@ var convertToStandardTime = function (entry) {
     return new Date("20" + date + "T" + time);
 };
 
-module.exports = function (entry) {
+module.exports = {
+    "http://share.popgo.org": function (entry) {
     var entryText = entry.text();
     if (upperPermittedFormats.some(function (format) {
         return (entryText.toUpperCase().indexOf(format) !== -1);
@@ -28,4 +29,4 @@ module.exports = function (entry) {
     }
 
     return undefined;
-};
+}}

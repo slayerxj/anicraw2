@@ -29,22 +29,23 @@ var stringFilter = function (items, words) {
 };
 
 var rank = function (item, lines) {
+    var i = 0;
     item.generalRanking = 3;
-    for (var i = 0; i < workNames.length; i++) {
+    for (i = 0; i < workNames.length; i++) {
         if (item.name.toUpperCase().indexOf(workNames[i].toUpperCase()) !== -1) {
             item.generalRanking--;
             break;
         }
     }
 
-    for (var i = 0; i < subtitleProviders.length; i++) {
+    for (i = 0; i < subtitleProviders.length; i++) {
         if (item.name.toUpperCase().indexOf(subtitleProviders[i].toUpperCase()) !== -1) {
             item.generalRanking--;
             break;
         }
     }
 
-    for (var i = 0; i < completeAliases.length; i++) {
+    for (i = 0; i < completeAliases.length; i++) {
         if (item.name.toUpperCase().indexOf(completeAliases[i].toUpperCase()) !== -1) {
             item.isComplete = true;
             item.generalRanking--;

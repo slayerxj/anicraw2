@@ -4,7 +4,7 @@ function Item() {
 	this.resolution = "1080p";
 	this.subtitleProvider = "";
 	this.url = "";
-	this.isNew = false;
+	this.isNew = true;
 	this.publishTime = {};
 	this.isComplete = false;
 	this.generalRanking = 4; // represent unranked
@@ -43,6 +43,7 @@ Item.initialize = function (record) {
 		item[attribute] = record[attribute];
 	});
 	item.publishTime = new Date(item.publishTime);
+	item.isNew = false;
 	return item;
 };
 

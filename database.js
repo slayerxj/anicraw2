@@ -32,6 +32,7 @@ Database.prototype.insert = function (item) {
 	if (this.contentMap[item.getKey()]) {
 		return false;
 	} else {
+		item.isNew = true;
 		this.content.push(item);
 		this.contentValidation.push(true);
 		this.contentMap[item.getKey()] = item;

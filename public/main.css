@@ -32,3 +32,8 @@ a:hover {
 a:active {
     text-decoration: underline;
 }
+.new {
+    font-weight: bold;
+    color: red;
+    ! important
+}

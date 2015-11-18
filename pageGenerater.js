@@ -14,7 +14,13 @@ var convertToTimeString = function (date) {
 var assembleString = function (database) {
     return "<tr><th>Time</th><th>Title</th><th>Rank</th><th>Download</th></tr>" +
         database.content.reduce(function (pre, cur) {
-            return pre + "<tr>" +
+            var head;
+            if (cur.isNew) {
+                head = pre + "<tr class='new'>";
+            } else {
+                head = pre + "<tr>";
+            }
+            return head +
                 "<td>" + convertToTimeString(cur.publishTime) + "</td>" +
                 "<td><a href='" + domain + cur.url + "'>" + cur.name + "</a></td>" +
                 "<td>" + stars[cur.generalRanking] + "</td>" +

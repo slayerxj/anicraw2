@@ -6,6 +6,9 @@
 </head>
 
 <body>
+	<button type="button" id="onlyNew">
+		only see the new comers
+	</button>
 	<table id="mainView">
 	</table>
 </body>
@@ -19,12 +22,15 @@
 		socket.emit("page load", "");
 	};
 
+	document.getElementById("onlyNew").onclick = function() {
+		console.log("Require only new");
+		socket.emit("require new", "");
+	};
 	socket.on('update message', function(content) {
 		console.log("receive page load");
 		var table = document.getElementById("mainView");
 		table.innerHTML = content;
 	});
-
 </script>
 
 </html>

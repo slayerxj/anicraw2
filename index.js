@@ -26,16 +26,26 @@ if (isRegen) {
 		socket.on('page load', function () {
 			console.log("receive page load");
 
-			var insertString = generatePage(database);
+			var insertString = generatePage(database.content);
 			console.log("emit update message");
 			io.emit('update message', insertString);
 			database.update(function () {
 				database.rank();
-				insertString = generatePage(database);
+				insertString = generatePage(database.content);
 				console.log("emit update message again");
 				io.emit('update message', insertString);
 				database.updateRecord();
 			});
+		});
+
+		socket.on('require new', function () {
+			console.log("receive require new");
+			var newItems = database.content.filter(function (item) {
+				return item.isNew;
+			});
+			var insertString = generatePage(newItems);
+			console.log("emit update message");
+			io.emit('update message', insertString);
 		});
 	});
 }

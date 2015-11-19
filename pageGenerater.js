@@ -11,9 +11,9 @@ var convertToTimeString = function (date) {
     return (date.getFullYear() - 2000) + "." + (date.getMonth() + 1) + "." + date.getDate();
 };
 
-var assembleString = function (database) {
+var assembleString = function (items) {
     return "<tr><th>Time</th><th>Title</th><th>Rank</th><th>Download</th></tr>" +
-        database.content.reduce(function (pre, cur) {
+        items.reduce(function (pre, cur) {
             var head;
             if (cur.isNew) {
                 head = pre + "<tr class='new'>";

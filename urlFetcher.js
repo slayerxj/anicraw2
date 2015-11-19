@@ -61,7 +61,7 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
             if (autoNext) {
                 whenFinish();
                 if (allPageInsertFail && hasItemGen) {
-                    console.log("stoped");
+                    console.log("stopped");
                     return;
                 } else {
                     fetchUrl(urlNumber + 1, database, callback, autoNext, whenFinish);

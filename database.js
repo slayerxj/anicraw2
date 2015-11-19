@@ -1,6 +1,5 @@
 var fs = require("fs");
 var Item = require("./item.js");
-var lastResult = require("./result.js");
 var rank = require("./rank.js");
 var urlFetcher = require("./urlFetcher.js");
 
@@ -12,7 +11,7 @@ function Database() {
 }
 
 Database.prototype.initialize = function () {
-	var record = require("./result.js");
+	var record = require("./record/result.js");
 
 	for (var index = 0; index < record.length; index++) {
 		var item = Item.initialize(record[index]);
@@ -66,7 +65,7 @@ Database.prototype.needUpdateRecord = function () {
 Database.prototype.updateRecord = function () {
 	// Record is maintained in Database Class, should split out
 	if (this.needUpdateRecord()) {
-		fs.writeFile("result.js", "module.exports = " + JSON.stringify(this.content), function (err) {
+		fs.writeFile("record/result.js", "module.exports = " + JSON.stringify(this.content), function (err) {
 			if (err) {
 				throw err;
 			}

@@ -25,10 +25,13 @@
 	};
 
 	var filt = function() {
-		            var isOnlyNew = document.getElementById("onlynew").checked;
-            var isOnlyCom = document.getElementById("onlycom").checked;
+		var isOnlyNew = document.getElementById("onlynew").checked;
+		var isOnlyCom = document.getElementById("onlycom").checked;
 		console.log("Require filter");
-		socket.emit("filt", {"isOnlyNew": isOnlyNew, "isOnlyCom":isOnlyCom});
+		socket.emit("filt", {
+			"isOnlyNew": isOnlyNew,
+			"isOnlyCom": isOnlyCom
+		});
 	};
 
 	document.getElementById("onlynew").onclick = filt;
@@ -39,7 +42,6 @@
 		var table = document.getElementById("mainView");
 		table.innerHTML = content;
 	});
-
 </script>
 
 </html>

@@ -10,46 +10,55 @@ var generatePage = require("./pageGenerater.js");
 var isRegen = (process.argv[2] === "r");
 var database = new Database();
 if (isRegen) {
-	database.regenerate(function () {
-		database.rank();
-		database.updateRecord();
-	});
+    database.regenerate(function () {
+        database.rank();
+        database.updateRecord();
+    });
 } else {
-	database.initialize().rank();
+    database.initialize().rank();
 
-	app.use(express.static("public"));
-	app.get('/', function (req, res) {
-		res.sendFile(__dirname + '/mainPage.html');
-	});
+    app.use(express.static("public"));
+    app.get('/', function (req, res) {
+        res.sendFile(__dirname + '/mainPage.html');
+    });
 
-	io.on('connection', function (socket) {
-		socket.on('page load', function () {
-			console.log("receive page load");
+    io.on('connection', function (socket) {
+        socket.on('page load', function () {
+            console.log("receive page load");
 
-			var insertString = generatePage(database.content);
-			console.log("emit update message");
-			io.emit('update message', insertString);
-			database.update(function () {
-				database.rank();
-				insertString = generatePage(database.content);
-				console.log("emit update message again");
-				io.emit('update message', insertString);
-				database.updateRecord();
-			});
-		});
+            var insertString = generatePage(database.content);
+            console.log("emit update message");
+            io.emit('update message', insertString);
+            database.update(function () {
+                database.rank();
+                insertString = generatePage(database.content);
+                console.log("emit update message again");
+                io.emit('update message', insertString);
+                database.updateRecord();
+            });
+        });
 
-		socket.on('require new', function () {
-			console.log("receive require new");
-			var newItems = database.content.filter(function (item) {
-				return item.isNew;
-			});
-			var insertString = generatePage(newItems);
-			console.log("emit update message");
-			io.emit('update message', insertString);
-		});
-	});
+        socket.on('filt', function (object) {
+            console.log("receive require filter");
+            var newItems = database.content.slice();
+            if (object.isOnlyNew) {
+                newItems = newItems.filter(function (item) {
+                    return item.isNew;
+                });
+            }
+
+            if (object.isOnlyCom) {
+                newItems = newItems.filter(function (item) {
+                    return item.isComplete;
+                });
+            }
+            var insertString = generatePage(newItems);
+            console.log("emit update message");
+            io.emit('update message', insertString);
+        });
+    });
 }
 
 http.listen(3000, function () {
-	console.log('listening on *:3000');
+    console.log('listening on *:3000');
 });

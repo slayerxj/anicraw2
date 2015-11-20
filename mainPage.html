@@ -6,9 +6,9 @@
 </head>
 
 <body>
-	<button type="button" id="onlyNew">
-		only see the new comers
-	</button>
+	Only new:
+	<input type="checkbox" id="onlynew"> Only complete:
+	<input type="checkbox" id="onlycom">
 	<br>
 	<br>
 	<table id="mainView">
@@ -24,15 +24,22 @@
 		socket.emit("page load", "");
 	};
 
-	document.getElementById("onlyNew").onclick = function() {
-		console.log("Require only new");
-		socket.emit("require new", "");
+	var filt = function() {
+		            var isOnlyNew = document.getElementById("onlynew").checked;
+            var isOnlyCom = document.getElementById("onlycom").checked;
+		console.log("Require filter");
+		socket.emit("filt", {"isOnlyNew": isOnlyNew, "isOnlyCom":isOnlyCom});
 	};
+
+	document.getElementById("onlynew").onclick = filt;
+	document.getElementById("onlycom").onclick = filt;
+
 	socket.on('update message', function(content) {
 		console.log("receive page load");
 		var table = document.getElementById("mainView");
 		table.innerHTML = content;
 	});
+
 </script>
 
 </html>

@@ -1,23 +1,20 @@
 var fs = require("fs");
 var request = require("superagent");
-var cheerio = require("cheerio");
 var async = require("async");
 
-var entryParser = require("./entryParser.js");
+var pageParser = require("./pageParser.js");
 
 var domain = "http://share.popgo.org";
 var searchPagePostfix = "/search.php?title=&groups=&uploader=&sorts=&orderby=&page=";
 var fullUrl = domain + searchPagePostfix;
-var lastPageNumber = 3277;
-var numberOfConcurrency = 20;
+var lastPageNumber = 3296;
+var numberOfConcurrency = 10;
 
 var failedUrl = [];
 
 var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
     console.log("Start to load page", urlNumber);
     var url = fullUrl + urlNumber.toString();
-    var allPageInsertFail = true;
-    var hasItemGen = false;
 
     request
         .get(url)
@@ -34,33 +31,12 @@ var fetchUrl = function (urlNumber, database, callback, autoNext, whenFinish) {
             }
 
             console.log("Page", urlNumber, "is loaded");
-            var $ = cheerio.load(res.text);
 
-            var entry = $('#index_maintable').children().children().first();
-
-            var item, insertSuccess;
-
-            while (entry.text()) {
-                item = entryParser[domain](entry);
-                // var isForceTop = (entry.text().indexOf("置顶") !== -1);
-
-                if (item) {
-                    hasItemGen = true;
-                    insertSuccess = database.insert(item);
-                    if (insertSuccess) {
-                        allPageInsertFail = false;
-                        item.isNew = true;
-                    }
-                    // if (!insertSuccess && !isForceTop) {
-                    // return;
-                    // }
-                }
-                entry = entry.next();
-            }
+            var isVisitedPage = pageParser[domain](res.text, database);
             callback();
             if (autoNext) {
                 whenFinish();
-                if (allPageInsertFail && hasItemGen) {
+                if (isVisitedPage) {
                     console.log("stopped");
                     return;
                 } else {

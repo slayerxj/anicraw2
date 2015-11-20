@@ -52,7 +52,7 @@ module.exports.getOneByOne = function (database, whenFinish) {
 
 module.exports.getAll = function (database, whenFinish) {
     var urlNumbers = [];
-    for (var i = 20; i < lastPageNumber + 1; i++) {
+    for (var i = 1; i < lastPageNumber + 1; i++) {
         urlNumbers.push(i);
     }
 

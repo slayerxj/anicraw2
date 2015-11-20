@@ -13,8 +13,8 @@ function Item() {
 }
 
 Item.prototype.isUnranked = function () {
-	// return (this.generalRanking === 5);
-	return true;
+	return (this.generalRanking === 5);
+	// return true;
 };
 
 Item.prototype.getKey = function () {

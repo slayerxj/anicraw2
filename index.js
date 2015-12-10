@@ -38,7 +38,7 @@ if (isRegen) {
             });
         });
 
-        socket.on('filt', function (object) {
+        socket.on('filter', function (object) {
             console.log("receive require filter");
             var newItems = database.content.slice();
             if (object.isOnlyNew) {

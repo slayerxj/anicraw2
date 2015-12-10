@@ -24,18 +24,18 @@
 		socket.emit("page load", "");
 	};
 
-	var filt = function() {
+	var filter = function() {
 		var isOnlyNew = document.getElementById("onlynew").checked;
 		var isOnlyCom = document.getElementById("onlycom").checked;
 		console.log("Require filter");
-		socket.emit("filt", {
+		socket.emit("filter", {
 			"isOnlyNew": isOnlyNew,
 			"isOnlyCom": isOnlyCom
 		});
 	};
 
-	document.getElementById("onlynew").onclick = filt;
-	document.getElementById("onlycom").onclick = filt;
+	document.getElementById("onlynew").onclick = filter;
+	document.getElementById("onlycom").onclick = filter;
 
 	socket.on('update message', function(content) {
 		console.log("receive page load");

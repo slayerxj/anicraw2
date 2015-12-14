@@ -35,9 +35,9 @@ var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
             } else {
                 console.log("Page", urlNumber, "is loaded");
                 var isVisitedPage = pageParser[domain](res.text, database);
-                whenPageIsLoaded();
                 if (isVisitedPage) {
                     console.log("stopped");
+                    whenPageIsLoaded();
                     return;
                 } else {
                     fetchUrlOneByOne(urlNumber + 1, database, whenPageIsLoaded);

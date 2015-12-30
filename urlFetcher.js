@@ -9,9 +9,7 @@ var searchPagePostfix = "/search.php?title=&groups=&uploader=&sorts=&orderby=&pa
 var fullUrl = domain + searchPagePostfix;
 var lastPageNumber = 3296;
 var numberOfConcurrency = 10;
-var tryFail = 5;
-var overallTryFail = 20;
-
+var retry = 5;
 var failedUrl = [];
 
 var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
@@ -24,11 +22,11 @@ var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
             if (err) {
                 console.log("An error is happend");
                 console.log("Stack trace: ", err.stack);
-                if (tryFail !== 0) {
+                if (retry !== 0) {
                     fetchUrlOneByOne(urlNumber, database, whenPageIsLoaded);
-                    tryFail--;
+                    retry--;
                 } else {
-                    tryFail = 5;
+                    retry = 5;
                     fetchUrlOneByOne(urlNumber + 1, database, whenPageIsLoaded);
                     failedUrl.push(parseInt(urlNumber));
                 }

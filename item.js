@@ -5,7 +5,7 @@ function Item() {
 	this.subtitleProvider = "";
 	this.url = "";
 	this.isNew = true;
-	this.publishTime = {};
+	this.publishTime = "";
 	this.isComplete = false;
 	this.generalRanking = 5; // represent unranked
 	// if not complete, the number of chapters
@@ -55,6 +55,8 @@ Item.sort = function (a, b) {
 	} else {
 		return rankDiff;
 	}
+    
+    return rankDiff;
 };
 
 module.exports = Item;

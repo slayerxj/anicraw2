@@ -3,18 +3,23 @@ var request = require("superagent");
 var async = require("async");
 
 var pageParser = require("./pageParser.js");
+var kisssub = require("./websites/kisssub.js");
 
-var domain = "http://share.popgo.org";
-var searchPagePostfix = "/search.php?title=&groups=&uploader=&sorts=&orderby=&page=";
+var domain = "http://www.kisssub.org/";
+var searchPagePostfix = ".html";
 var fullUrl = domain + searchPagePostfix;
-var lastPageNumber = 3296;
+var lastPageNumber = 2;
 var numberOfConcurrency = 10;
 var retry = 5;
 var failedUrl = [];
 
+var getFullUrl = function (urlNumber) {
+    return domain + urlNumber.toString() + searchPagePostfix;;
+};
+
 var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
     console.log("Start to load page", urlNumber);
-    var url = fullUrl + urlNumber.toString();
+    var url = getFullUrl(urlNumber);
 
     request
         .get(url)
@@ -46,7 +51,7 @@ var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
 
 var fetchUrl = function (urlNumber, database, callback) {
     console.log("Start to load page", urlNumber);
-    var url = fullUrl + urlNumber.toString();
+    var url = getFullUrl(urlNumber);
 
     request
         .get(url)

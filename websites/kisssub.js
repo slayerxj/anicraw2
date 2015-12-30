@@ -5,6 +5,11 @@ var Item = require('../item.js');
 var util = require('../util.js');
 
 var domain = "http://www.kisssub.org/";
+var searchPagePostfix = ".html";
+
+var getFullUrl = function (urlNumber) {
+    return domain + urlNumber.toString() + searchPagePostfix;;
+};
 
 var parseDetailPage = function (resText, item) {
     var publishTimeP = resText.indexOf("发布时间: ");
@@ -59,7 +64,7 @@ var parseEntry = function (entry) {
     var timeString = entry.children[1].children[0].data;
     var detailPageString = entry.children[5].children[1].attribs.href;
     var mixedTitleString = entry.children[5].children[1].children[0].data;
-    var sizeString = entry.children[7].children[0].data;
+    // var sizeString = entry.children[7].children[0].data;
 
     if (util.isWorthCreateNewItem(mixedTitleString)) {
         var item = new Item();
@@ -96,5 +101,6 @@ var parseEntry = function (entry) {
 // };
 
 module.exports = {
-    parsePage: parsePage
+    parsePage: parsePage,
+    getFullUrl: getFullUrl
 };

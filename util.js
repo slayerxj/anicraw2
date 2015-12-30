@@ -11,9 +11,15 @@ var isWorthCreateNewItem = function (text) {
     }));
 };
 
-var a = function () { };
+var sliceString = function (wholeString, before, after) {
+    var indexBefore = wholeString.indexOf(before) + before.length;
+    var indexAfter = wholeString.indexOf(after, indexBefore);
+    var wantedString = wholeString.slice(indexBefore, indexAfter);
+
+    return wantedString;
+}
 
 module.exports = {
     isWorthCreateNewItem: isWorthCreateNewItem,
-    a: a
+    sliceString: sliceString
 };

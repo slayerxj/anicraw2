@@ -3,19 +3,13 @@ var request = require("superagent");
 var async = require("async");
 
 var pageParser = require("./pageParser.js");
-var kisssub = require("./websites/kisssub.js");
+var site = require("./websites/index.js");
+var currentSite = null;
 
-var domain = "http://www.kisssub.org/";
-var searchPagePostfix = ".html";
-var fullUrl = domain + searchPagePostfix;
 var lastPageNumber = 2;
 var numberOfConcurrency = 10;
 var retry = 5;
 var failedUrl = [];
-
-var getFullUrl = function (urlNumber) {
-    return domain + urlNumber.toString() + searchPagePostfix;;
-};
 
 var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
     console.log("Start to load page", urlNumber);
@@ -51,7 +45,7 @@ var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
 
 var fetchUrl = function (urlNumber, database, callback) {
     console.log("Start to load page", urlNumber);
-    var url = getFullUrl(urlNumber);
+    var url = currentSite.getFullUrl(urlNumber);
 
     request
         .get(url)
@@ -62,7 +56,7 @@ var fetchUrl = function (urlNumber, database, callback) {
                 console.log("Stack trace: ", err.stack);
                 failedUrl.push(parseInt(urlNumber));
             } else {
-                pageParser[domain](res.text, database);
+                currentSite.parsePage(res.text, database);
                 console.log("Page", urlNumber, "is loaded");
                 callback();
             }
@@ -73,7 +67,8 @@ module.exports.getOneByOne = function (database, whenPageIsLoaded) {
     fetchUrlOneByOne(1, database, whenPageIsLoaded);
 };
 
-module.exports.getAll = function (database, whenFinish) {
+module.exports.getAll = function (domain, database, whenFinish) {
+    currentSite = site[domain];
     var urlNumbers = [];
     for (var i = 1; i < lastPageNumber + 1; i++) {
         urlNumbers.push(i);

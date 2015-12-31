@@ -39,7 +39,7 @@ var parsePage = function (responseText, database) {
     for (var i = 0; i < allEntrys.length; i++) {
         var item = parseEntry(allEntrys[i]);
         database.insert(item);
-        getDetailByDetailPage(item, database);
+        // getDetailByDetailPage(item, database);
     }
     return true;
 };

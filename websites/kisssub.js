@@ -12,40 +12,51 @@ var getFullUrl = function (urlNumber) {
 };
 
 var parseDetailPage = function (resText, item) {
-    var publishTimeP = resText.indexOf("发布时间: ");
-    var publishTimeS = resText.indexOf("</p>", publishTimeP);
-    var timeString = resText.slice(publishTimeP + 6, publishTimeS);
+    var timeString = util.sliceString(resText, "发布时间: ", "</p>");
     item.publishTime = new Date(timeString);
 
-    var linkP = resText.indexOf("a id=\"magnet\" href=\"");
-    var linkS = resText.indexOf("磁力下载");
-    var linkString = resText.slice(linkP + 20, linkS - 2);
+    var linkString = util.sliceString(resText, "a id=\"magnet\" href=\"", "\">磁力下载</a>");
     item.magnetLink = linkString;
 }
 
-var getDetailByDetailPage = function (item, database) {
-    if (item) {
-        request
-            .get(item.url)
-            .end(function (err, res) {
-                if (err) {
-                    console.log("Fail to get details");
-                    console.log("Stack trace: ", err.stack);
-                } else {
-                    console.log("Success to load detail page");
-                    parseDetailPage(res.text, item);
-                }
-            });
-    }
+var getDetailByDetailPage = function (item, database, count, callback) {
+    request
+        .get(item.url)
+        .end(function (err, res) {
+            if (err) {
+                console.log("Fail to get details");
+                console.log("Stack trace: ", err.stack);
+            } else {
+                console.log("Success to load detail page");
+                parseDetailPage(res.text, item);
+            }
+            
+            count.value--;
+            if(count.value === 0) {
+                callback();
+            }
+        });
 }
 
-var parsePage = function (responseText, database) {
+var parsePage = function (responseText, database, callback) {
     var allEntrys = getAllEntrysOfOnePage(responseText);
-    for (var i = 0; i < allEntrys.length; i++) {
-        var item = parseEntry(allEntrys[i]);
-        database.insert(item);
-        getDetailByDetailPage(item, database);
+    var entryNum = allEntrys.length;
+    var count = {
+        value: entryNum
+    };
+    for (var i = 0; i < entryNum; i++) {
+        var item = parseEntry(allEntrys[i], callback);
+        if (item) {
+            getDetailByDetailPage(item, database, count, callback);
+            database.insert(item);
+        } else {
+            count.value--;
+            if (count.value === 0) {
+                callback();
+            }
+        }
     }
+    // TODO
     return true;
 };
 
@@ -101,6 +112,9 @@ var parseEntry = function (entry) {
 // };
 
 module.exports = {
+    // TODO: Auto fetch
+    lastPageNumber: 600,
+    numberOfConcurrency: 1,
     parsePage: parsePage,
     getFullUrl: getFullUrl
 };

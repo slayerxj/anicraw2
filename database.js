@@ -54,8 +54,8 @@ Database.prototype.update = function (whenFinish) {
 	urlFetcher.getOneByOne(this, whenFinish);
 };
 
-Database.prototype.regenerate = function (whenFinish) {
-	urlFetcher.getAll(this, whenFinish);
+Database.prototype.regenerate = function (domain, whenFinish) {
+	urlFetcher.getAll(domain, this, whenFinish);
 };
 
 Database.prototype.needUpdateRecord = function () {

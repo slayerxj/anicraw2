@@ -2,18 +2,15 @@ var fs = require("fs");
 var request = require("superagent");
 var async = require("async");
 
-var pageParser = require("./pageParser.js");
 var site = require("./websites/index.js");
 var currentSite = null;
 
-var lastPageNumber = 2;
-var numberOfConcurrency = 10;
 var retry = 5;
 var failedUrl = [];
 
 var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
     console.log("Start to load page", urlNumber);
-    var url = getFullUrl(urlNumber);
+    var url = currentSite.getFullUrl(urlNumber);
 
     request
         .get(url)
@@ -31,7 +28,7 @@ var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
                 }
             } else {
                 console.log("Page", urlNumber, "is loaded");
-                var isVisitedPage = pageParser[domain](res.text, database);
+                var isVisitedPage = currentSite.parsePage(res.text, database);
                 if (isVisitedPage) {
                     console.log("stopped");
                     whenPageIsLoaded();
@@ -56,9 +53,8 @@ var fetchUrl = function (urlNumber, database, callback) {
                 console.log("Stack trace: ", err.stack);
                 failedUrl.push(parseInt(urlNumber));
             } else {
-                currentSite.parsePage(res.text, database);
+                currentSite.parsePage(res.text, database, callback);
                 console.log("Page", urlNumber, "is loaded");
-                callback();
             }
         });
 };
@@ -70,11 +66,11 @@ module.exports.getOneByOne = function (database, whenPageIsLoaded) {
 module.exports.getAll = function (domain, database, whenFinish) {
     currentSite = site[domain];
     var urlNumbers = [];
-    for (var i = 1; i < lastPageNumber + 1; i++) {
+    for (var i = 1; i < currentSite.lastPageNumber + 1; i++) {
         urlNumbers.push(i);
     }
 
-    async.eachLimit(urlNumbers, numberOfConcurrency, function (urlNumber, callback) {
+    async.eachLimit(urlNumbers, currentSite.numberOfConcurrency, function (urlNumber, callback) {
         fetchUrl(urlNumber, database, callback);
     }, function (err) {
         if (err) {

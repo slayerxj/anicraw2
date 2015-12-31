@@ -10,7 +10,8 @@ var generatePage = require("./pageGenerater.js");
 var isRegen = (process.argv[2] === "r");
 var database = new Database();
 if (isRegen) {
-    database.regenerate(function () {
+    var domain = "http://www.kisssub.org/";
+    database.regenerate(domain, function () {
         database.rank();
         database.updateRecord();
     });
@@ -29,13 +30,13 @@ if (isRegen) {
             var insertString = generatePage(database.content);
             console.log("emit update message");
             io.emit('update message', insertString);
-            database.update(function () {
-                database.rank();
-                insertString = generatePage(database.content);
-                console.log("emit update message again");
-                io.emit('update message', insertString);
-                database.updateRecord();
-            });
+            // database.update(function () {
+            //     database.rank();
+            //     insertString = generatePage(database.content);
+            //     console.log("emit update message again");
+            //     io.emit('update message', insertString);
+            //     database.updateRecord();
+            // });
         });
 
         socket.on('filter', function (object) {

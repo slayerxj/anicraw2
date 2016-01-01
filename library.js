@@ -14,7 +14,8 @@ var works = [
     ["食戟のソーマ", "食戟之灵", "Shokugeki"],
     ["実は私は", "其实我是", "其實我是", "Jitsu wa Watashi wa"],
     ["Working"],
-	["Euphonium"]
+	["Euphonium"],
+    ["マクロス"]
 ];
 
 module.exports = {

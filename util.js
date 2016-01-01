@@ -12,11 +12,13 @@ var isWorthCreateNewItem = function (text) {
 };
 
 var sliceString = function (wholeString, before, after) {
-    var indexBefore = wholeString.indexOf(before) + before.length;
+    var indexBefore = wholeString.indexOf(before);
     var indexAfter = wholeString.indexOf(after, indexBefore);
-    var wantedString = wholeString.slice(indexBefore, indexAfter);
-
-    return wantedString;
+    if ((indexBefore === -1) || (indexAfter === -1)) {
+        return "";
+    } else {
+        return wholeString.slice(indexBefore + before.length, indexAfter);
+    }
 }
 
 module.exports = {

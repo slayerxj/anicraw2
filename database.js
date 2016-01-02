@@ -50,8 +50,8 @@ Database.prototype.rank = function () {
 	return this;
 };
 
-Database.prototype.update = function (whenFinish) {
-	urlFetcher.getOneByOne(this, whenFinish);
+Database.prototype.update = function (domain, whenFinish) {
+	urlFetcher.getOneByOne(domain, this, whenFinish);
 };
 
 Database.prototype.regenerate = function (domain, whenFinish) {

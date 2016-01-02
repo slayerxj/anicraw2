@@ -59,7 +59,8 @@ var fetchUrl = function (urlNumber, database, callback) {
         });
 };
 
-module.exports.getOneByOne = function (database, whenPageIsLoaded) {
+module.exports.getOneByOne = function (domain, database, whenPageIsLoaded) {
+    currentSite = site[domain];
     fetchUrlOneByOne(1, database, whenPageIsLoaded);
 };
 

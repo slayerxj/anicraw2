@@ -35,9 +35,6 @@ var parseEntry = function (entry) {
     if (util.isWorthCreateNewItem(mixedTitleString)) {
         var item = new Item();
         item.name = mixedTitleString;
-        if (mixedTitleString.indexOf("[澄空学园&华盟字幕社] Sound!Euphonium 吹响吧！悠风号 BDRip 合集（修正）") !== -1) {
-            console.log("bingo");
-        }
         item.publishTime = new Date(timeString);
         item.url = domain + detailPageString;
 
@@ -64,10 +61,7 @@ var insertLogic = function (database, items) {
 };
 
 var getDetail = function (item, num) {
-    console.log("getDetail", urlFetcher.urlQueue.length);
-
-    var callback = function (responseText) {
-        console.log("DetailPage loaded", urlFetcher.urlQueue.length);
+    urlFetcher.pushUrlToQueue(item.url, function (responseText) {
         var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
         item.publishTime = new Date(timeString);
 
@@ -75,13 +69,10 @@ var getDetail = function (item, num) {
         item.magnetLink = linkString;
 
         num.decrease();
-    }
-
-    urlFetcher.pushUrlToQueue(item.url, callback);
+    });
 }
 
 var parsePage = function (responseText, items, allSubPageFinish) {
-    console.log("parsePage");
     var allEntrys = getAllEntrysOfOnePage(responseText);
     var num = {
         value: allEntrys.length,
@@ -106,23 +97,20 @@ var parsePage = function (responseText, items, allSubPageFinish) {
 };
 
 var fetchNextPage = function (database, pageCount) {
-    console.log("fetchNextPage called");
     var items = [];
     var fullUrl = getFullUrl(pageCount);
 
     var allSubPageFinish = function () {
         var isVisitedPage = insertLogic(database, items);
-        // if (!isVisitedPage) {
-        //     fetchNextPage(database, pageCount + 1);
-        // }
+        if (!isVisitedPage) {
+            fetchNextPage(database, pageCount + 1);
+        }
     };
 
     var pageFinish = function (responseText) {
-        console.log("a main page finished");
         parsePage(responseText, items, allSubPageFinish);
     };
 
-    console.log("start get main page");
     urlFetcher.pushUrlToQueue(fullUrl, pageFinish);
 };
 

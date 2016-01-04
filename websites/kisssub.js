@@ -1,6 +1,7 @@
 var cheerio = require("cheerio");
 var request = require("superagent");
 
+var urlFetcher = require('../urlFetcher.js');
 var Item = require('../item.js');
 var util = require('../util.js');
 
@@ -8,56 +9,11 @@ var domain = "http://www.kisssub.org/";
 var searchPagePostfix = ".html";
 
 var getFullUrl = function (urlNumber) {
-    return domain + urlNumber.toString() + searchPagePostfix;;
-};
-
-var parseDetailPage = function (resText, item) {
-    var timeString = util.sliceString(resText, "发布时间: ", "</p>");
-    item.publishTime = new Date(timeString);
-
-    var linkString = util.sliceString(resText, "a id=\"magnet\" href=\"", "\">磁力下载</a>");
-    item.magnetLink = linkString;
-}
-
-var getDetailByDetailPage = function (item, database, count, callback) {
-    request
-        .get(item.url)
-        .end(function (err, res) {
-            if (err) {
-                console.log("Fail to get details");
-                console.log("Stack trace: ", err.stack);
-            } else {
-                console.log("Success to load detail page");
-                parseDetailPage(res.text, item);
-            }
-            
-            count.value--;
-            if(count.value === 0) {
-                callback();
-            }
-        });
-}
-
-var parsePage = function (responseText, database, callback) {
-    var allEntrys = getAllEntrysOfOnePage(responseText);
-    var entryNum = allEntrys.length;
-    var count = {
-        value: entryNum
-    };
-    for (var i = 0; i < entryNum; i++) {
-        var item = parseEntry(allEntrys[i], callback);
-        if (item) {
-            getDetailByDetailPage(item, database, count, callback);
-            database.insert(item);
-        } else {
-            count.value--;
-            if (count.value === 0) {
-                callback();
-            }
-        }
+    if (urlNumber === 1) {
+        return domain;
+    } else {
+        return domain + urlNumber.toString() + searchPagePostfix;
     }
-    // TODO
-    return true;
 };
 
 var getAllEntrysOfOnePage = function (responseText) {
@@ -75,7 +31,6 @@ var parseEntry = function (entry) {
     var timeString = entry.children[1].children[0].data;
     var detailPageString = entry.children[5].children[1].attribs.href;
     var mixedTitleString = entry.children[5].children[1].children[0].data;
-    // var sizeString = entry.children[7].children[0].data;
 
     if (util.isWorthCreateNewItem(mixedTitleString)) {
         var item = new Item();
@@ -89,32 +44,87 @@ var parseEntry = function (entry) {
     }
 };
 
-// var insertLogic =  function () {
-//     while (entry.text()) {
-//         entry = parseEntry(entry);
-//         if (entry) {
-//             hasEntryGen = true;
-//             insertSuccess = database.insert(entry);
-//             if (insertSuccess) {
-//                 isEntirePageInsertFailed = false;
-//                 entry.isNew = true;
-//             }
-//         }
-//         entry = entry.next();
-//     }
+var insertLogic = function (database, items) {
+    var allPageInsertFail = true;
+    items.forEach(function (item) {
+        var insertStatus = database.insert(item);
+        if (insertStatus) {
+            allPageInsertFail = false;
+        }
+    })
+    var isVisitedPage = (items.length !== 0) && allPageInsertFail;
+    if (isVisitedPage) {
+        return true;
+    } else {
+        return false;
+    }
+};
 
-//     var isVisitedPage = hasEntryGen && isEntirePageInsertFailed;
-//     if (isVisitedPage) {
-//         return true;
-//     } else {
-//         return false;
-//     }
-// };
+var getDetailByDetailPage = function (item, num) {
+    urlFetcher.pushUrlToQueue(item.url, function (responseText) {
+        var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
+        item.publishTime = new Date(timeString);
+
+        var linkString = util.sliceString(responseText, "a id=\"magnet\" href=\"", "\">磁力下载</a>");
+        item.magnetLink = linkString;
+
+        num.decrease();
+    });
+}
+
+var parsePage = function (responseText, items, allSubPageFinish) {
+    var allEntrys = getAllEntrysOfOnePage(responseText);
+    var num = {
+        value: allEntrys.length,
+        decrease: function () {
+            num.value--;
+            if (num.value === 0) {
+                allSubPageFinish();
+            }
+        }
+    };
+
+    allEntrys.forEach(function (entry) {
+        var item = parseEntry(entry);
+        if (item) {
+            getDetailByDetailPage(item, num);
+            items.push(item);
+        } else {
+            num.decrease();
+        }
+    });
+};
+
+var fetchNextPage = function (database, pageCount, fetchNewfinish) {
+    var items = [];
+    var fullUrl = getFullUrl(pageCount);
+
+    var allSubPageFinish = function () {
+        var isVisitedPage = insertLogic(database, items);
+        if (isVisitedPage) {
+            fetchNewfinish();
+        } else {
+            fetchNextPage(database, pageCount + 1, fetchNewfinish);
+        }
+    };
+
+    var pageFinish = function (responseText) {
+        parsePage(responseText, items, allSubPageFinish);
+    };
+
+    urlFetcher.pushUrlToQueue(fullUrl, pageFinish);
+};
+
+var fetchNew = function (database, fetchNewfinish) {
+    fetchNextPage(database, 1, fetchNewfinish);
+    urlFetcher.startFetchingUrls(fetchNewfinish);
+};
 
 module.exports = {
     // TODO: Auto fetch
     lastPageNumber: 600,
     numberOfConcurrency: 1,
-    parsePage: parsePage,
-    getFullUrl: getFullUrl
+    fetchNew,
+    parsePage,
+    getFullUrl
 };

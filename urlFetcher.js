@@ -1,90 +1,106 @@
-var fs = require("fs");
 var request = require("superagent");
-var async = require("async");
+var defaultConfiguration = require("./defaultConfiguration.js");
 
-var site = require("./websites/index.js");
-var currentSite = null;
-
-var retry = 5;
+var urlQueue = [];
+var urlFailCount = {};
+var overallFailCount = 0;
 var failedUrl = [];
+var currentSite = null;
+var pause = false;
 
-var fetchUrlOneByOne = function (urlNumber, database, whenPageIsLoaded) {
-    console.log("Start to load page", urlNumber);
-    var url = currentSite.getFullUrl(urlNumber);
+var retry = defaultConfiguration.retry;
+var overallRetry = defaultConfiguration.overallRetry;
+var concurrencyNum = defaultConfiguration.concurrencyNum;
 
-    request
-        .get(url)
-        .end(function (err, res) {
-            if (err) {
-                console.log("An error is happend");
-                console.log("Stack trace: ", err.stack);
-                if (retry !== 0) {
-                    fetchUrlOneByOne(urlNumber, database, whenPageIsLoaded);
-                    retry--;
-                } else {
-                    retry = 5;
-                    fetchUrlOneByOne(urlNumber + 1, database, whenPageIsLoaded);
-                    failedUrl.push(parseInt(urlNumber));
-                }
-            } else {
-                console.log("Page", urlNumber, "is loaded");
-                var isVisitedPage = currentSite.parsePage(res.text, database);
-                if (isVisitedPage) {
-                    console.log("stopped");
-                    whenPageIsLoaded();
-                    return;
-                } else {
-                    fetchUrlOneByOne(urlNumber + 1, database, whenPageIsLoaded);
-                }
-            }
-        });
-};
+var increaseOverallFailCount = function () {
+    overallFailCount = overallFailCount + 1;
 
-var fetchUrl = function (urlNumber, database, callback) {
-    console.log("Start to load page", urlNumber);
-    var url = currentSite.getFullUrl(urlNumber);
-
-    request
-        .get(url)
-        .end(function (err, res) {
-            if (err) {
-                callback(err);
-                console.log("An error is happend");
-                console.log("Stack trace: ", err.stack);
-                failedUrl.push(parseInt(urlNumber));
-            } else {
-                currentSite.parsePage(res.text, database, callback);
-                console.log("Page", urlNumber, "is loaded");
-            }
-        });
-};
-
-module.exports.getOneByOne = function (database, whenPageIsLoaded) {
-    fetchUrlOneByOne(1, database, whenPageIsLoaded);
-};
-
-module.exports.getAll = function (domain, database, whenFinish) {
-    currentSite = site[domain];
-    var urlNumbers = [];
-    for (var i = 1; i < currentSite.lastPageNumber + 1; i++) {
-        urlNumbers.push(i);
+    if (overallFailCount > overallRetry) {
+        pauseFetchingUrls();
+        setTimeout(continueFetchingUrls, 15 * 1000);
     }
-
-    async.eachLimit(urlNumbers, currentSite.numberOfConcurrency, function (urlNumber, callback) {
-        fetchUrl(urlNumber, database, callback);
-    }, function (err) {
-        if (err) {
-            console.log("End error is happend");
-            console.log("Stack trace: ", err.stack);
-        }
-
-        console.log("finished");
-        if (failedUrl.length) {
-            console.log("The following page failed.", failedUrl.reduce(function (pre, cur) {
-                return pre + ", " + cur;
-            }));
-        }
-
-        whenFinish();
-    });
 };
+
+var handleFetchUrlFailed = function (url, callback) {
+    urlFailCount[url] = urlFailCount[url] + 1;
+
+    if (urlFailCount[url] <= retry) {
+        pushUrlToQueue(url, callback);
+    } else {
+        failedUrl.push(url);
+    }
+};
+
+var fetchUrl = function (url, callback) {
+    request
+        .get(url)
+        .end(function (err, res) {
+            if (err) {
+                console.log("Load", url, "is failed");
+                console.log("Stack trace: ", err.stack);
+                handleFetchUrlFailed(url, callback);
+            } else {
+                console.log(url, "is loaded");
+                callback(res.text);
+            }
+        });
+};
+
+var pushUrlToQueue = function (url, callback) {
+    urlQueue.push({ url, callback });
+}
+
+var pauseFetchingUrls = function () {
+    pause = true;
+};
+
+var continueFetchingUrls = function () {
+    pause = false;
+    startFetchingUrls();
+};
+
+var setup = function (urlSetting) {
+    if (urlSetting.retry) {
+        retry = urlSetting.retry;
+    }
+    if (urlSetting.overallRetry) {
+        overallRetry = urlSetting.overallRetry;
+    }
+    if (urlSetting.concurrencyNum) {
+        concurrencyNum = urlSetting.concurrencyNum;
+    }
+};
+
+var handleFinish = function () {
+    
+};
+
+var startFetchingUrls = function (finish) {
+    var concurrencyCount = { value: 0 }
+    while ((urlQueue.length > 0) && (concurrencyCount.value < concurrencyNum) && (pause === false)) {
+        var fetchPack = urlQueue.shift();
+        fetchUrl(fetchPack.url, function (res) {
+            fetchPack.callback(res);
+            concurrencyCount.value--;
+            if ((concurrencyCount.value === 0) && (urlQueue.length === 0)) {
+                finish();
+            }
+            startFetchingUrls(finish);
+        });
+        concurrencyCount.value++;
+    }
+};
+
+var fetchAllurls = function(domain, urls, whenFinished) {
+    
+};
+
+var fetchUrlOneByOne = function(domain, initialUrlPack) {
+    setup(domain);
+    pushUrlToQueue(initialUrlPack);
+};
+
+module.exports = {
+    pushUrlToQueue,
+    startFetchingUrls
+}

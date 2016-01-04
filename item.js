@@ -23,7 +23,7 @@ Item.prototype.getKey = function () {
 };
 
 Item.prototype.isEqual = function (item) {
-	if (this.url === item.url) {
+	if (this.url && item.url && (this.url === item.url)) {
 		return true;
 	} else {
 		if ((this.name === item.name) &&

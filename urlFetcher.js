@@ -2,6 +2,7 @@ var request = require("superagent");
 var defaultConfiguration = require("./defaultConfiguration.js");
 
 var urlQueue = [];
+var concurrencyCount = { value: 0 };
 var urlFailCount = {};
 var overallFailCount = 0;
 var failedUrl = [];
@@ -40,7 +41,7 @@ var fetchUrl = function (url, callback) {
                 console.log("Stack trace: ", err.stack);
                 handleFetchUrlFailed(url, callback);
             } else {
-                console.log(url, "is loaded");
+                // console.log(url, "is loaded");
                 callback(res.text);
             }
         });
@@ -71,12 +72,8 @@ var setup = function (urlSetting) {
     }
 };
 
-var handleFinish = function () {
-    
-};
-
 var startFetchingUrls = function (finish) {
-    var concurrencyCount = { value: 0 }
+    console.log("startFetchingUrls", urlQueue.length);
     while ((urlQueue.length > 0) && (concurrencyCount.value < concurrencyNum) && (pause === false)) {
         var fetchPack = urlQueue.shift();
         fetchUrl(fetchPack.url, function (res) {
@@ -102,5 +99,6 @@ var fetchUrlOneByOne = function(domain, initialUrlPack) {
 
 module.exports = {
     pushUrlToQueue,
-    startFetchingUrls
+    startFetchingUrls,
+    urlQueue
 }

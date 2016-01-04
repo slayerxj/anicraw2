@@ -35,6 +35,9 @@ var parseEntry = function (entry) {
     if (util.isWorthCreateNewItem(mixedTitleString)) {
         var item = new Item();
         item.name = mixedTitleString;
+        if (mixedTitleString.indexOf("[澄空学园&华盟字幕社] Sound!Euphonium 吹响吧！悠风号 BDRip 合集（修正）") !== -1) {
+            console.log("bingo");
+        }
         item.publishTime = new Date(timeString);
         item.url = domain + detailPageString;
 
@@ -60,8 +63,11 @@ var insertLogic = function (database, items) {
     }
 };
 
-var getDetailByDetailPage = function (item, num) {
-    urlFetcher.pushUrlToQueue(item.url, function (responseText) {
+var getDetail = function (item, num) {
+    console.log("getDetail", urlFetcher.urlQueue.length);
+
+    var callback = function (responseText) {
+        console.log("DetailPage loaded", urlFetcher.urlQueue.length);
         var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
         item.publishTime = new Date(timeString);
 
@@ -69,10 +75,13 @@ var getDetailByDetailPage = function (item, num) {
         item.magnetLink = linkString;
 
         num.decrease();
-    });
+    }
+
+    urlFetcher.pushUrlToQueue(item.url, callback);
 }
 
 var parsePage = function (responseText, items, allSubPageFinish) {
+    console.log("parsePage");
     var allEntrys = getAllEntrysOfOnePage(responseText);
     var num = {
         value: allEntrys.length,
@@ -87,36 +96,38 @@ var parsePage = function (responseText, items, allSubPageFinish) {
     allEntrys.forEach(function (entry) {
         var item = parseEntry(entry);
         if (item) {
-            getDetailByDetailPage(item, num);
+            item.index = items.length;
             items.push(item);
+            getDetail(item, num);
         } else {
             num.decrease();
         }
     });
 };
 
-var fetchNextPage = function (database, pageCount, fetchNewfinish) {
+var fetchNextPage = function (database, pageCount) {
+    console.log("fetchNextPage called");
     var items = [];
     var fullUrl = getFullUrl(pageCount);
 
     var allSubPageFinish = function () {
         var isVisitedPage = insertLogic(database, items);
-        if (isVisitedPage) {
-            fetchNewfinish();
-        } else {
-            fetchNextPage(database, pageCount + 1, fetchNewfinish);
-        }
+        // if (!isVisitedPage) {
+        //     fetchNextPage(database, pageCount + 1);
+        // }
     };
 
     var pageFinish = function (responseText) {
+        console.log("a main page finished");
         parsePage(responseText, items, allSubPageFinish);
     };
 
+    console.log("start get main page");
     urlFetcher.pushUrlToQueue(fullUrl, pageFinish);
 };
 
 var fetchNew = function (database, fetchNewfinish) {
-    fetchNextPage(database, 1, fetchNewfinish);
+    fetchNextPage(database, 1);
     urlFetcher.startFetchingUrls(fetchNewfinish);
 };
 

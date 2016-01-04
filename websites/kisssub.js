@@ -1,3 +1,5 @@
+"use strict";
+
 var cheerio = require("cheerio");
 var request = require("superagent");
 
@@ -61,6 +63,7 @@ var insertLogic = function (database, items) {
 };
 
 var getDetail = function (item, num) {
+    // TODO: not right due to closure
     urlFetcher.pushUrlToQueue(item.url, function (responseText) {
         var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
         item.publishTime = new Date(timeString);
@@ -70,7 +73,7 @@ var getDetail = function (item, num) {
 
         num.decrease();
     });
-}
+};
 
 var parsePage = function (responseText, items, allSubPageFinish) {
     var allEntrys = getAllEntrysOfOnePage(responseText);
@@ -87,13 +90,14 @@ var parsePage = function (responseText, items, allSubPageFinish) {
     allEntrys.forEach(function (entry) {
         var item = parseEntry(entry);
         if (item) {
-            item.index = items.length;
             items.push(item);
             getDetail(item, num);
         } else {
             num.decrease();
         }
     });
+
+
 };
 
 var fetchNextPage = function (database, pageCount) {

@@ -98,5 +98,5 @@ var fetchUrlOneByOne = function(domain, initialUrlPack) {
 
 module.exports = {
     pushUrlToQueue,
-    startFetchingUrls,
+    startFetchingUrls
 }

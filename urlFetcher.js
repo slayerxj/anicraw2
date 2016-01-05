@@ -1,6 +1,8 @@
 var request = require("superagent");
 var defaultConfiguration = require("./defaultConfiguration.js");
 
+var count = 0;
+
 var urlQueue = [];
 var concurrencyCount = { value: 0 };
 var urlFailCount = {};
@@ -48,7 +50,8 @@ var fetchUrl = function (url, callback) {
 };
 
 var pushUrlToQueue = function (url, callback) {
-    urlQueue.push({ url, callback });
+    urlQueue.push({ url, callback, count });
+    count++;
 }
 
 var pauseFetchingUrls = function () {
@@ -75,23 +78,27 @@ var setup = function (urlSetting) {
 var startFetchingUrls = function (finish) {
     while ((urlQueue.length > 0) && (concurrencyCount.value < concurrencyNum) && (pause === false)) {
         var fetchPack = urlQueue.shift();
-        fetchUrl(fetchPack.url, function (res) {
-            fetchPack.callback(res);
-            concurrencyCount.value--;
-            if ((concurrencyCount.value === 0) && (urlQueue.length === 0)) {
-                finish();
-            }
-            startFetchingUrls(finish);
-        });
+
+        var makeCallback = function (fetchPack) {
+            return function (res) {
+                fetchPack.callback(res);
+                concurrencyCount.value--;
+                if ((concurrencyCount.value === 0) && (urlQueue.length === 0)) {
+                    finish();
+                }
+                startFetchingUrls(finish);
+            };
+        };
+        fetchUrl(fetchPack.url, makeCallback(fetchPack));
         concurrencyCount.value++;
     }
 };
 
-var fetchAllurls = function(domain, urls, whenFinished) {
-    
+var fetchAllurls = function (domain, urls, whenFinished) {
+
 };
 
-var fetchUrlOneByOne = function(domain, initialUrlPack) {
+var fetchUrlOneByOne = function (domain, initialUrlPack) {
     setup(domain);
     pushUrlToQueue(initialUrlPack);
 };

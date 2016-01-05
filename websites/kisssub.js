@@ -53,8 +53,9 @@ var insertLogic = function (database, items) {
         if (insertStatus) {
             allPageInsertFail = false;
         }
-    })
+    });
     var isVisitedPage = (items.length !== 0) && allPageInsertFail;
+    
     if (isVisitedPage) {
         return true;
     } else {
@@ -64,15 +65,19 @@ var insertLogic = function (database, items) {
 
 var getDetail = function (item, num) {
     // TODO: not right due to closure
-    urlFetcher.pushUrlToQueue(item.url, function (responseText) {
-        var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
-        item.publishTime = new Date(timeString);
+    function makeCallback(temp) {
+        return function (responseText) {
+            var timeString = util.sliceString(responseText, "发布时间: ", "</p>");
+            temp.publishTime = new Date(timeString);
 
-        var linkString = util.sliceString(responseText, "a id=\"magnet\" href=\"", "\">磁力下载</a>");
-        item.magnetLink = linkString;
+            var linkString = util.sliceString(responseText, "a id=\"magnet\" href=\"", "\">磁力下载</a>");
+            temp.magnetLink = linkString;
 
-        num.decrease();
-    });
+            num.decrease();
+        }
+    }
+
+    urlFetcher.pushUrlToQueue(item.url, makeCallback(item));
 };
 
 var parsePage = function (responseText, items, allSubPageFinish) {
@@ -106,9 +111,9 @@ var fetchNextPage = function (database, pageCount) {
 
     var allSubPageFinish = function () {
         var isVisitedPage = insertLogic(database, items);
-        if (!isVisitedPage) {
-            fetchNextPage(database, pageCount + 1);
-        }
+        // if (!isVisitedPage) {
+        //     fetchNextPage(database, pageCount + 1);
+        // }
     };
 
     var pageFinish = function (responseText) {

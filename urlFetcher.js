@@ -1,14 +1,11 @@
 var request = require("superagent");
 var defaultConfiguration = require("./defaultConfiguration.js");
 
-var count = 0;
-
 var urlQueue = [];
 var concurrencyCount = { value: 0 };
 var urlFailCount = {};
 var overallFailCount = 0;
 var failedUrl = [];
-var currentSite = null;
 var pause = false;
 
 var retry = defaultConfiguration.retry;
@@ -50,8 +47,7 @@ var fetchUrl = function (url, callback) {
 };
 
 var pushUrlToQueue = function (url, callback) {
-    urlQueue.push({ url, callback, count });
-    count++;
+    urlQueue.push({ url, callback });
 }
 
 var pauseFetchingUrls = function () {

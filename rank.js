@@ -1,17 +1,18 @@
 var library = require("./library.js");
 
-var formatAliases = library.getFormatAliases();
-var workNames = library.getWorkNames();
-var subtitleProviders = library.getSubtitleProviders();
-var completeAliases = library.getCompleteAliases();
+var formatAliases = library.getFormatAliases().map(function (cur) { return cur.toUpperCase() });
+var workNames = library.getWorkNames().map(function (cur) { return cur.toUpperCase() });
+var subtitleProviders = library.getSubtitleProviders().map(function (cur) { return cur.toUpperCase() });
+var completeAliases = library.getCompleteAliases().map(function (cur) { return cur.toUpperCase() });
 
 var stringFilter = function (items, words) {
     var validItems = [];
     var leftItems = [];
 
     for (var i = 0; i < items.length; i++) {
+        var upperItemName = items[i].name.toUpperCase();
         for (var j = 0; j < words.length; j++) {
-            if (items[i].name.toUpperCase().indexOf(words[j].toUpperCase()) !== -1) {
+            if (upperItemName.indexOf(words[j]) !== -1) {
                 validItems.push(items[i]);
                 break;
             }
@@ -29,33 +30,44 @@ var stringFilter = function (items, words) {
 };
 
 var rank = function (item, lines) {
-    item.generalRanking = 3;
-    for (var i = 0; i < workNames.length; i++) {
-        if (item.name.toUpperCase().indexOf(workNames[i].toUpperCase()) !== -1) {
-            item.generalRanking--;
-            break;
-        }
+    item.generalRanking = 4;
+    var upperItemName = item.name.toUpperCase();
+    
+    if (workNames.some(function (cur) {
+        return (upperItemName.indexOf(cur) !== -1);
+    })) {
+        item.generalRanking--;
+    }
+    
+    if (subtitleProviders.some(function (cur) {
+        return (upperItemName.indexOf(cur) !== -1);
+    })) {
+        item.generalRanking--;
+    }
+    
+    item.isComplete = false;
+    if (completeAliases.some(function (cur) {
+        return (upperItemName.indexOf(cur) !== -1);
+    })) {
+        item.isComplete = true;
+        item.generalRanking--;
     }
 
-    for (var i = 0; i < subtitleProviders.length; i++) {
-        if (item.name.toUpperCase().indexOf(subtitleProviders[i].toUpperCase()) !== -1) {
-            item.generalRanking--;
-            break;
-        }
-    }
-
-    for (var i = 0; i < completeAliases.length; i++) {
-        if (item.name.toUpperCase().indexOf(completeAliases[i].toUpperCase()) !== -1) {
-            item.isComplete = true;
-            item.generalRanking--;
-            break;
-        }
+    item.generalRanking--;
+    if (upperItemName.indexOf("720") !== -1) {
+        item.resolution = "720p";
+        item.generalRanking++;
     }
 };
 
 module.exports = function (items) {
+    var start = new Date();
+    var startTime = start.getTime();
     var splitItems = stringFilter(items, formatAliases);
     splitItems.valid.forEach(function (item) {
         rank(item);
     });
+    var end = new Date();
+    var endTime = end.getTime();
+    console.log("Item number:", items.length, ". Rank used time (ms):", endTime - startTime);
 };
